@@ -1609,11 +1609,11 @@ bool CSquadSpawner::Spawn( const Vector &here, EntityHandleVector_t *result )
 	}
 
 	// Is there enough slots to spawn?
-	CTeam *deadTeam = GetGlobalTeam( TEAM_SPECTATOR );
+	/*CTeam *deadTeam = GetGlobalTeam( TEAM_SPECTATOR );
 	if ( deadTeam->GetNumPlayers() < m_memberSpawnerVector.Count() )
 	{
 		return false;
-	}
+	}*/
 
 	// spawn all of the squad members
 	bool isComplete = true;

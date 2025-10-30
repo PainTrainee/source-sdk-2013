@@ -32,7 +32,7 @@ void CTFBotLocomotion::Update( void )
 	}
 	else
 	{
-		me->PressCrouchButton( 0.3f );
+		me->PressCrouchButton( 0.01f );
 	}
 }
 
@@ -41,14 +41,14 @@ void CTFBotLocomotion::Update( void )
 // Move directly towards the given position
 void CTFBotLocomotion::Approach( const Vector &pos, float goalWeight )
 {
-	if ( TFGameRules()->IsMannVsMachineMode() )
-	{
-		if ( !IsOnGround() && !IsClimbingOrJumping() )
-		{
-			// no air control
-			return;
-		}
-	}
+	//if ( TFGameRules()->IsMannVsMachineMode() )
+	//{
+	//	if ( !IsOnGround() && !IsClimbingOrJumping() )
+	//	{
+	//		// no air control
+	//		return;
+	//	}
+	//}
 
 	BaseClass::Approach( pos, goalWeight );
 }
@@ -58,7 +58,7 @@ void CTFBotLocomotion::Approach( const Vector &pos, float goalWeight )
 // Distance at which we will die if we fall
 float CTFBotLocomotion::GetDeathDropHeight( void ) const
 {
-	return 1000.0f;
+	return 269.0f;
 }
 
 

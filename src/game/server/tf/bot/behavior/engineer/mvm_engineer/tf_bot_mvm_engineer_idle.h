@@ -42,6 +42,7 @@ private:
 	bool ShouldAdvanceNestSpot( CTFBot *me );
 
 	void TryToDetonateStaleNest();
+	bool DoesBuildingRequireAttention(CBaseObject* pObj);
 	bool m_bTriedToDetonateStaleNest;
 };
 

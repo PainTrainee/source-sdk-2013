@@ -18273,7 +18273,14 @@ void CTFGameRules::FireGameEvent( IGameEvent *event )
 
 				for( int i=0; i<playerVector.Count(); ++i )
 				{
-					playerVector[i]->ChangeTeam( TEAM_SPECTATOR, false, true );
+					if (playerVector[i]->IsBot())
+					{
+						engine->ServerCommand(UTIL_VarArgs("kickid %d\n", playerVector[i]->GetUserID()));
+					}
+					/*else if (playerVector[i]->IsPlayer())
+					{
+						playerVector[i]->ChangeTeam(TEAM_SPECTATOR, false, true);
+					}*/
 				}
 			}
 		}

@@ -732,7 +732,7 @@ void CPopulationManager::Update( void )
 	}
 	else if ( TFGameRules()->State_Get() == GR_STATE_STARTGAME )
 	{
-		AllocateBots();
+		//AllocateBots();
 	}
 }
 

@@ -23,7 +23,7 @@ ActionResult< CTFBot >	CTFBotMvMDeployBomb::OnStart( CTFBot *me, Action< CTFBot 
 	// remember where we start deploying
 	m_anchorPos = me->GetAbsOrigin();
 	me->GetLocomotionInterface()->Stop();
-	me->SetAbsVelocity( Vector( 0.0f, 0.0f, 0.0f ) );
+	//me->SetAbsVelocity( Vector( 0.0f, 0.0f, 0.0f ) );
 
 	if ( me->IsMiniBoss() )
 	{

@@ -176,7 +176,7 @@ Action< CTFBot > *CTFBotScenarioMonitor::DesiredScenarioAndClassAction( CTFBot *
 	}
 #endif // TF_RAID_MODE	
 
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (TFGameRules()->IsMannVsMachineMode() && me->GetTeamNumber() == TF_TEAM_PVE_INVADERS) // Only use this specialized AI for BLU bots
 	{
 		if ( me->IsPlayerClass( TF_CLASS_SPY ) )
 		{
@@ -226,7 +226,7 @@ Action< CTFBot > *CTFBotScenarioMonitor::DesiredScenarioAndClassAction( CTFBot *
 		return new CTFBotSpyInfiltrate;
 	}
 
-	if ( !TheTFBots().IsMeleeOnly() )
+	if ( !TheTFBots().IsMeleeOnly() || TFGameRules()->IsInMedievalMode())
 	{
 		if ( me->IsPlayerClass( TF_CLASS_SNIPER ) )
 		{
