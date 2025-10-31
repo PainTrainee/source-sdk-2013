@@ -62,7 +62,7 @@ ActionResult< CTFBot >	CTFBotSniperLurk::OnStart( CTFBot *me, Action< CTFBot > *
 
 	m_priorHint = NULL;
 
-	if ( TFGameRules()->IsMannVsMachineMode() && me->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		// mann vs machine snipers shouldn't stop until they reach their home
 		//m_isOpportunistic = false;
@@ -519,7 +519,7 @@ QueryResultType CTFBotSniperLurk::ShouldAttack( const INextBot *bot, const CKnow
 //---------------------------------------------------------------------------------------------
 QueryResultType CTFBotSniperLurk::ShouldRetreat( const INextBot *me ) const
 {
-	if ( TFGameRules()->IsMannVsMachineMode() && me->GetEntity()->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if (ToTFBot(me->GetEntity())->IsBotMannVsMachinePopulator())
 	{
 		return ANSWER_NO;
 	}
@@ -534,7 +534,7 @@ const CKnownEntity *CTFBotSniperLurk::SelectMoreDangerousThreat( const INextBot 
 																 const CKnownEntity *threat1, 
 																 const CKnownEntity *threat2 ) const
 {
-	if ( TFGameRules()->IsMannVsMachineMode() && tf_mvm_bot_sniper_target_by_dps.GetBool() )
+	if (ToTFBot(meBot->GetEntity())->IsBotMannVsMachinePopulator() && tf_mvm_bot_sniper_target_by_dps.GetBool() )
 	{
 		CTFBot *me = ToTFBot( meBot->GetEntity() );
 

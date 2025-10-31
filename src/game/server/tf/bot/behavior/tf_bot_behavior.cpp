@@ -14,8 +14,10 @@
 #include "tf_obj.h"
 #include "tf_obj_sentrygun.h"
 #include "tf_weapon_flamethrower.h"
+#include "tf_weapon_rocketlauncher.h"
 #include "tf_weapon_sniperrifle.h"
 #include "tf_weapon_compound_bow.h"
+#include "tf_weaponbase_melee.h"
 #include "bot/tf_bot.h"
 #include "bot/tf_bot_manager.h"
 #include "bot/behavior/tf_bot_behavior.h"
@@ -36,8 +38,8 @@ ConVar tf_bot_path_lookahead_range( "tf_bot_path_lookahead_range", "300" );
 ConVar tf_bot_sniper_aim_error( "tf_bot_sniper_aim_error", "0.01", FCVAR_CHEAT );
 ConVar tf_bot_sniper_aim_steady_rate( "tf_bot_sniper_aim_steady_rate", "10", FCVAR_CHEAT );
 ConVar tf_bot_debug_sniper( "tf_bot_debug_sniper", "0", FCVAR_CHEAT );
-ConVar tf_bot_fire_weapon_min_time( "tf_bot_fire_weapon_min_time", "1", FCVAR_CHEAT );
-ConVar tf_bot_taunt_victim_chance( "tf_bot_taunt_victim_chance", "20" );		// community requested this not be a cheat cvar
+ConVar tf_bot_fire_weapon_min_time( "tf_bot_fire_weapon_min_time", "0.2", FCVAR_CHEAT );
+ConVar tf_bot_taunt_victim_chance( "tf_bot_taunt_victim_chance", "2" );		// community requested this not be a cheat cvar
 
 ConVar tf_bot_notice_backstab_chance( "tf_bot_notice_backstab_chance", "25", FCVAR_CHEAT );
 ConVar tf_bot_notice_backstab_min_range( "tf_bot_notice_backstab_min_range", "100", FCVAR_CHEAT );
@@ -51,7 +53,7 @@ ConVar tf_bot_hitscan_range_limit( "tf_bot_hitscan_range_limit", "1800", FCVAR_C
 ConVar tf_bot_always_full_reload( "tf_bot_always_full_reload", "0", FCVAR_CHEAT );
 
 ConVar tf_bot_fire_weapon_allowed( "tf_bot_fire_weapon_allowed", "1", FCVAR_CHEAT, "If zero, TFBots will not pull the trigger of their weapons (but will act like they did)" );
-ConVar tf_bot_reevaluate_class_in_spawnroom( "tf_bot_reevaluate_class_in_spawnroom", "1", FCVAR_CHEAT, "If set, bots will opportunisticly switch class while in spawnrooms if their current class is no longer their first choice." );
+ConVar tf_bot_reevaluate_class_in_spawnroom( "tf_bot_reevaluate_class_in_spawnroom", "0", FCVAR_CHEAT, "If set, bots will opportunisticly switch class while in spawnrooms if their current class is no longer their first choice." );
 
 
 //---------------------------------------------------------------------------------------------
@@ -151,7 +153,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 
 	// should I try to change class?
 	if ( tf_bot_reevaluate_class_in_spawnroom.GetBool() &&
-	     !TFGameRules()->IsMannVsMachineMode() && 
+	     !me->IsBotMannVsMachinePopulator() &&
 		 !TFGameRules()->IsInTraining() && 
 		 myArea && myArea->HasAttributeTF( spawnRoomFlag ) )
 	{
@@ -174,7 +176,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 		}
 	}
 
-	if ( TFGameRules()->IsMannVsMachineMode() && me->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		// infinite ammo
 		// me->GiveAmmo( 100, TF_AMMO_PRIMARY, true );
@@ -190,7 +192,7 @@ ActionResult< CTFBot >	CTFBotMainAction::Update( CTFBot *me, float interval )
 		if ( myArea && myArea->HasAttributeTF( spawnRoomFlag ) )
 		{
 			// invading bots get uber while they leave their spawn so they don't drop their cash where players can't pick it up
-			me->m_Shared.AddCond( TF_COND_INVULNERABLE, 0.5f );
+			//me->m_Shared.AddCond( TF_COND_INVULNERABLE, 0.5f );
 			me->m_Shared.AddCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED, 0.5f );
 			me->m_Shared.AddCond( TF_COND_INVULNERABLE_WEARINGOFF, 0.5f );
 			me->m_Shared.AddCond( TF_COND_IMMUNE_TO_PUSHBACK, 1.0f );
@@ -408,7 +410,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnContact( CTFBot *me, CBaseEntit
 		m_lastTouchTime = gpGlobals->curtime;
 
 		// Mini-bosses destroy non-Sentrygun objects they bump into (ie: Dispensers)
-		if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
+		if ( /*TFGameRules()->IsMannVsMachineMode() &&*/ me->IsMiniBoss() )
 		{
 			if ( other->IsBaseObject() )
 			{
@@ -573,7 +575,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 		{
 			bool isTaunting = !me->HasTheFlag() && RandomFloat( 0.0f, 100.0f ) <= tf_bot_taunt_victim_chance.GetFloat();
 
-			if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
+			if ( /*TFGameRules()->IsMannVsMachineMode() &&*/ me->IsMiniBoss() )
 			{
 				// Bosses don't taunt puny humans
 				isTaunting = false;
@@ -629,7 +631,7 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 			// lead our target and aim for the feet with the rocket launcher
 			if ( !me->IsDifficulty( CTFBot::EASY ) )
 			{
-				if ( myWeapon->GetWeaponID() == TF_WEAPON_ROCKETLAUNCHER )
+				if (dynamic_cast<CTFRocketLauncher*>(myWeapon))
 				{
 					// if they are above us, don't aim for the feet
 					const float aboveTolerance = 30.0f;
@@ -659,7 +661,7 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 					// aim at their feet
 
 					// lead our target
-					const float missileSpeed = 1100.0f;
+					const float missileSpeed = ((CTFRocketLauncher*)myWeapon)->GetProjectileSpeed();
 					float rangeBetween = me->GetRangeTo( subject->GetAbsOrigin() );
 
 					const float veryCloseRange = 150.0f;
@@ -718,7 +720,7 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 				}
 			}
 
-			if ( WeaponID_IsSniperRifle( myWeapon->GetWeaponID() ) )
+			if ( WeaponID_IsSniperRifle( myWeapon->GetWeaponID() ) && subject->IsPlayer() )
 			{
 				if ( m_aimAdjustTimer.IsElapsed() )
 				{
@@ -743,6 +745,13 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 				float s, c;
 				FastSinCos( m_aimErrorAngle, &s, &c );
 
+				Vector headPosition = subject->EyePosition();
+				if (subject->IsPlayer())
+				{
+					CTFPlayer* player = dynamic_cast<CTFPlayer*>(const_cast<CBaseCombatCharacter*>(subject));
+					player->GetAttachment(player->LookupAttachment("head"), headPosition);
+				}
+
 				// aim a bit lower than the head - the imperfections may yet give us a headshot
 				Vector desiredAimSpot;
 				
@@ -751,7 +760,8 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 				case CTFBot::EXPERT:
 				case CTFBot::HARD:
 					// aim for the head - reaction times will differentiate the skill levels
-					desiredAimSpot = subject->EyePosition();
+					//desiredAimSpot = subject->EyePosition();
+					desiredAimSpot = headPosition;
 					break;
 
 				default:
@@ -1074,13 +1084,13 @@ const CKnownEntity *CTFBotMainAction::SelectMoreDangerousThreatInternal( const I
 	}
 	
 	// close range sentries are the most dangerous of all
-	bool shouldFearSentryGuns = true;
+	bool shouldFearSentryGuns = !me->IsBotMannVsMachinePopulator();
 
-	if ( TFGameRules()->IsMannVsMachineMode() )
-	{
-		// MvM bots are not afraid of sentry guns and treat them like other enemy players
-		shouldFearSentryGuns = false;
-	}
+	//if ( TFGameRules()->IsMannVsMachineMode() )
+	//{
+	//	// MvM bots are not afraid of sentry guns and treat them like other enemy players
+	//	shouldFearSentryGuns = false;
+	//}
 
 	if ( shouldFearSentryGuns )
 	{
@@ -1117,7 +1127,7 @@ const CKnownEntity *CTFBotMainAction::SelectMoreDangerousThreatInternal( const I
 	}
 
 	// enforce Spy hatred in MvM mode
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		const float spyHateRadius = 1000.0f;
 
@@ -1235,6 +1245,9 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	if ( me->m_Shared.InCond( TF_COND_TAUNTING ) )
 		return;
 
+	if (me->m_Shared.InCond(TF_COND_SHIELD_CHARGE))
+		return;
+
 	if ( !tf_bot_fire_weapon_allowed.GetBool() )
 	{
 		return;
@@ -1309,7 +1322,7 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	}
 
 	// if our target is uber'd, most weapons are useless - unless we're in MvM, where invuln tanking is valuable
-	if ( TFGameRules() && !TFGameRules()->IsMannVsMachineMode() )
+	if (!me->IsBotMannVsMachinePopulator())
 	{
 		CTFPlayer *playerThreat = ToTFPlayer( threat->GetEntity() );
 		if ( playerThreat && playerThreat->m_Shared.IsInvulnerable() )
@@ -1336,7 +1349,7 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 
 	if ( myWeapon->IsMeleeWeapon() )
 	{
-		if ( me->IsRangeLessThan( threat->GetEntity(), 250.0f ) )
+		if (me->IsRangeLessThan(threat->GetEntity(), static_cast<float>(dynamic_cast<CTFWeaponBaseMelee*>(myWeapon)->GetSwingRange())))
 		{
 			me->PressFireButton();
 		}
@@ -1344,7 +1357,7 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	}
 
 	// limit range of hitscan weapon fire in MvM
-	if ( TFGameRules()->IsMannVsMachineMode() && !me->IsPlayerClass( TF_CLASS_SNIPER ) && me->IsHitScanWeapon( myWeapon ) )
+	if (me->IsBotMannVsMachinePopulator() && !me->IsPlayerClass( TF_CLASS_SNIPER ) && me->IsHitScanWeapon( myWeapon ) )
 	{
 		if ( me->IsRangeGreaterThan( threat->GetEntity(), tf_bot_hitscan_range_limit.GetFloat() ) )
 		{
@@ -1389,7 +1402,7 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 			// only fire if zoomed in
 			if ( me->m_Shared.InCond( TF_COND_ZOOMED ) )
 			{
-				const float reactionTime = TFGameRules()->IsMannVsMachineMode() ? 0.5f : 0.1f;	// just a moment to stop headshots when obviously panning too fast to see
+				const float reactionTime = me->IsBotMannVsMachinePopulator() ? 0.5f : 0.1f;	// just a moment to stop headshots when obviously panning too fast to see
 				if ( m_steadyTimer.HasStarted() && m_steadyTimer.IsGreaterThen( reactionTime ) )
 				{
 					trace_t trace;

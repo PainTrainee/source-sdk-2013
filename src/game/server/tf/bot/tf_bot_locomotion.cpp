@@ -41,14 +41,15 @@ void CTFBotLocomotion::Update( void )
 // Move directly towards the given position
 void CTFBotLocomotion::Approach( const Vector &pos, float goalWeight )
 {
-	//if ( TFGameRules()->IsMannVsMachineMode() )
-	//{
-	//	if ( !IsOnGround() && !IsClimbingOrJumping() )
-	//	{
-	//		// no air control
-	//		return;
-	//	}
-	//}
+	CTFBot* me = ToTFBot(GetBot()->GetEntity());
+	if ( me->IsBotMannVsMachinePopulator() )
+	{
+		if ( !IsOnGround() && !IsClimbingOrJumping() )
+		{
+			// no air control
+			return;
+		}
+	}
 
 	BaseClass::Approach( pos, goalWeight );
 }
@@ -123,7 +124,7 @@ void CTFBotLocomotion::Jump( void )
 		return;
 	}
 
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if ( me->IsBotMannVsMachinePopulator() )
 	{
 		int iCustomJumpParticle = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( me, iCustomJumpParticle, bot_custom_jump_particle );

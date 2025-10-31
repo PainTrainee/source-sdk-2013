@@ -406,6 +406,8 @@ public:
 	void SetFlagTarget( CCaptureFlag* pFlag );
 	CCaptureFlag* GetFlagTarget() const { return m_hFollowingFlagTarget; }
 	bool HasFlagTaget() const { return m_hFollowingFlagTarget != NULL; }
+	bool IsBotMannVsMachinePopulator() const;
+	void SetBotMannVsMachinePopulator(bool toggle);
 
 	struct EventChangeAttributes_t
 	{
@@ -582,6 +584,7 @@ private:
 	CHandle< CCaptureFlag > m_hFollowingFlagTarget;
 
 	CUtlVector< const EventChangeAttributes_t* > m_eventChangeAttributes;
+	bool m_isMvMPopulator;
 };
 
 

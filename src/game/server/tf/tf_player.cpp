@@ -1219,7 +1219,7 @@ void CTFPlayer::SetGrapplingHookTarget( CBaseEntity *pTarget, bool bShouldBleed 
 //-----------------------------------------------------------------------------
 bool CTFPlayer::CanBeForcedToLaugh( void )
 {
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && IsBot() && ( GetTeamNumber() == TF_TEAM_PVE_INVADERS ) )
+	if ( IsMiniBoss() )
 		return false;
 
 	return true;
@@ -6820,7 +6820,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		return;
 	}
 
-	if ( TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_DEFENDERS )
+	if ( TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_DEFENDERS && !IsBot() )
 	{
 		if ( IsReadyToPlay() && !TFGameRules()->InSetup() && g_pPopulationManager && !g_pPopulationManager->IsInEndlessWaves() )
 		{
@@ -8881,7 +8881,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			{
 				if ( bot->HasMission( CTFBot::MISSION_DESTROY_SENTRIES ) )
 				{
-					if ( ( m_iHealth - info.GetDamage() ) <= 0 )
+					if ( ( m_iHealth - info.GetDamage() ) <= 1 )
 					{
 						m_iHealth = 1;
 						return 0;
@@ -10831,7 +10831,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			vDamagePos = WorldSpaceCenter();
 		}
 
-		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+		/*if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
 		{
 			if ( ( IsMiniBoss() && static_cast< float >( GetHealth() ) / GetMaxHealth() > 0.3f ) || realDamage < 50 )
 			{
@@ -10841,11 +10841,22 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			{
 				DispatchParticleEffect( "bot_impact_heavy", GetAbsOrigin(), vec3_angle );
 			}
-		}
-		else
+		}*/
+		if(BloodColor() != DONT_BLEED)
 		{
 			CPVSFilter filter( vDamagePos );
 			TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex() );
+		}
+		else
+		{
+			if ( ( IsMiniBoss() && static_cast< float >( GetHealth() ) / GetMaxHealth() > 0.3f ) || realDamage < 50 )
+			{
+				DispatchParticleEffect( "bot_impact_light", GetAbsOrigin(), vec3_angle );
+			}
+			else
+			{
+				DispatchParticleEffect( "bot_impact_heavy", GetAbsOrigin(), vec3_angle );
+			}
 		}
 	}
 
@@ -10920,8 +10931,8 @@ bool CTFPlayer::ShouldGib( const CTakeDamageInfo &info )
 	}
 
 	// normal players/bots don't gib in MvM
-	if ( TFGameRules()->IsMannVsMachineMode() )
-		return false;
+	//if ( TFGameRules()->IsMannVsMachineMode() )
+	//	return false;
 
 	// Suicide explode always gibs.
 	if ( m_bSuicideExplode )
@@ -12236,9 +12247,14 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 						bool bForceDistribute = iForceDistributeCurrency != 0;
 
 						// if I'm force to distribute currency, just give the credit to the attacker
-						if ( !pMoneyMaker && bForceDistribute )
+						if ( !pMoneyMaker && bForceDistribute)
 						{
 							pMoneyMaker = pPlayerAttacker;
+						}
+						//anything other than player should force distribute
+						if (!info.GetAttacker()->IsPlayer() || pPlayerAttacker->IsBot())
+						{
+							bForceDistribute = true;
 						}
 
 						DropCurrencyPack( TF_CURRENCY_PACK_CUSTOM, nDropAmount, bForceDistribute, pMoneyMaker );
@@ -12263,8 +12279,11 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 			}
 
 			// Electrical effect whenever a bot dies
-			CPVSFilter filter( WorldSpaceCenter() );
-			TE_TFParticleEffect( filter, 0.f, "bot_death", GetAbsOrigin(), vec3_angle );
+			if (BloodColor() != DONT_BLEED)
+			{
+				CPVSFilter filter(WorldSpaceCenter());
+				TE_TFParticleEffect(filter, 0.f, "bot_death", GetAbsOrigin(), vec3_angle);
+			}
 		}
 		else
 		{
@@ -15263,11 +15282,11 @@ void CTFPlayer::DeathSound( const CTakeDamageInfo &info )
 		nDeathSoundOffset = IsMiniBoss() ? DEATH_SOUND_GIANT_MVM_FIRST : DEATH_SOUND_MVM_FIRST;
 	}
 	
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && 
+	if ( !IsBot() && TFGameRules() && TFGameRules()->IsMannVsMachineMode() &&
 		 GetTeamNumber() != TF_TEAM_PVE_INVADERS && !m_bGoingFeignDeath )
 	{
 		EmitSound( "MVM.PlayerDied" );
-		return;
+		//return;
 	}
 
 	if ( m_LastDamageType & DMG_FALL ) // Did we die from falling?

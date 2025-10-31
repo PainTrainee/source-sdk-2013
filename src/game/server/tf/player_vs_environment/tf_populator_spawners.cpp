@@ -1207,21 +1207,21 @@ bool CTFBotSpawner::Spawn( const Vector &rawHere, EntityHandleVector_t *result )
 		newBot->StartIdleSound();
 
 		// Add our items first, they'll get replaced below by the normal MvM items if any are needed
-		if ( TFGameRules()->IsMannVsMachineMode() && ( newBot->GetTeamNumber() == TF_TEAM_PVE_INVADERS ) )
-		{
-			// Apply the Rome 2 promo items to each bot. They'll be 
-			// filtered out for clients that do not have Romevision.
-			CMissionPopulator *pMission = dynamic_cast< CMissionPopulator* >( GetPopulator() );
-			if ( pMission && ( pMission->GetMissionType() == CTFBot::MISSION_DESTROY_SENTRIES ) )
-			{
-				newBot->AddItem( "tw_sentrybuster" );
-			}
-			else
-			{
-				newBot->AddItem( g_szRomePromoItems_Hat[m_class] );
-				newBot->AddItem( g_szRomePromoItems_Misc[m_class] );
-			}
-		}
+		//if ( TFGameRules()->IsMannVsMachineMode() && ( newBot->GetTeamNumber() == TF_TEAM_PVE_INVADERS ) )
+		//{
+		//	// Apply the Rome 2 promo items to each bot. They'll be 
+		//	// filtered out for clients that do not have Romevision.
+		//	CMissionPopulator *pMission = dynamic_cast< CMissionPopulator* >( GetPopulator() );
+		//	if ( pMission && ( pMission->GetMissionType() == CTFBot::MISSION_DESTROY_SENTRIES ) )
+		//	{
+		//		newBot->AddItem( "tw_sentrybuster" );
+		//	}
+		//	else
+		//	{
+		//		newBot->AddItem( g_szRomePromoItems_Hat[m_class] );
+		//		newBot->AddItem( g_szRomePromoItems_Misc[m_class] );
+		//	}
+		//}
 
 		// apply default attributes
 		const CTFBot::EventChangeAttributes_t* pEventChangeAttributes = newBot->GetEventChangeAttributes( g_pPopulationManager->GetDefaultEventChangeAttributesName() );
@@ -1302,6 +1302,7 @@ bool CTFBotSpawner::Spawn( const Vector &rawHere, EntityHandleVector_t *result )
 				DevMsg( "%3.2f: Spawned TFBot '%s'\n", gpGlobals->curtime, m_name.IsEmpty() ? newBot->GetPlayerClass()->GetName() : m_name.Get() );
 			}
 		}
+		newBot->SetBotMannVsMachinePopulator(true);
 	}
 	else
 	{

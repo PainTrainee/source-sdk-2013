@@ -62,7 +62,7 @@ ConVar tf_bot_suspect_spy_forget_cooldown( "tf_bot_suspect_spy_forget_cooldown",
 
 ConVar tf_bot_debug_tags( "tf_bot_debug_tags", "0", FCVAR_CHEAT, "ent_text will only show tags on bots" );
 
-ConVar tf_bot_spawn_use_preset_roster( "tf_bot_spawn_use_preset_roster", "1", FCVAR_CHEAT, "Bot will choose class from a preset class table." );
+ConVar tf_bot_spawn_use_preset_roster( "tf_bot_spawn_use_preset_roster", "0", FCVAR_CHEAT, "Bot will choose class from a preset class table." );
 
 extern ConVar tf_bot_sniper_spot_max_count;
 extern ConVar tf_bot_fire_weapon_min_time;
@@ -1294,6 +1294,8 @@ CTFBot::CTFBot()
 	m_maxVisionRangeOverride = -1.0f;
 	m_squadFormationError = 0.0f;
 
+	m_isMvMPopulator = false;
+
 	m_hFollowingFlagTarget = NULL;
 
 	SetShouldQuickBuild( false );
@@ -1346,6 +1348,7 @@ void CTFBot::Spawn()
 	m_myControlPoint = NULL;
 	ClearSniperSpots();
 	ClearTags();
+	m_isMvMPopulator = false;
 
 	m_hFollowingFlagTarget = NULL;
 
@@ -1378,6 +1381,16 @@ void CTFBot::SetMission( MissionType mission, bool resetBehaviorSystem )
 	}
 }
 
+//-----------------------------------------------------------------------------------------------------
+bool CTFBot::IsBotMannVsMachinePopulator() const
+{
+	return m_isMvMPopulator;
+}
+//-----------------------------------------------------------------------------------------------------
+void CTFBot::SetBotMannVsMachinePopulator(bool toggle)
+{
+	m_isMvMPopulator = toggle;
+}
 //-----------------------------------------------------------------------------------------------------
 bool CTFBot::ShouldReEvaluateCurrentClass( void ) const
 {
@@ -1452,7 +1465,7 @@ void CTFBot::Touch( CBaseEntity *pOther )
 		if ( them->m_Shared.IsStealthed() || them->m_Shared.InCond( TF_COND_DISGUISED ) )
 		{
 			// bumped a spy - they are discovered!
-			if ( TFGameRules()->IsMannVsMachineMode() )	// we have to build up to knowing that they are a spy in MvM
+			if ( IsBotMannVsMachinePopulator() )	// we have to build up to knowing that they are a spy in MvM
 			{
 				SuspectSpy( them );
 			}
@@ -1485,7 +1498,7 @@ void CTFBot::AvoidPlayers( CUserCmd *pCmd )
 	Vector avoidVector = vec3_origin;
 
 	float tooClose = 50.0f;
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		// bots stay farther apart in MvM mode
 		tooClose = 150.0f;
@@ -1579,10 +1592,10 @@ void CTFBot::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAutoB
 {
 	BaseClass::ChangeTeam( iTeamNum, bAutoTeam, bSilent, bAutoBalance );
 	
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		SetPrevMission( CTFBot::NO_MISSION );
-		ClearAllAttributes();
+		//ClearAllAttributes();
 		// Clear Sound
 		StopIdleSound();
 	}
@@ -1593,7 +1606,7 @@ void CTFBot::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAutoB
 bool CTFBot::ShouldGib( const CTakeDamageInfo &info )
 {
 	// only gib giant/miniboss
-	if ( TFGameRules()->IsMannVsMachineMode() && ( IsMiniBoss() || GetModelScale() > 1.f ) )
+	if ( IsMiniBoss() || GetModelScale() > 1.f )
 	{
 		return true;
 	}
@@ -1714,7 +1727,7 @@ void CTFBot::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	// announce Spies
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		if ( IsPlayerClass( TF_CLASS_SPY ) )
 		{
@@ -2016,7 +2029,7 @@ CCaptureFlag *CTFBot::GetFlagToFetch( void ) const
 	int nCarriedFlags = 0;
 
 	// MvM Engineer bot never pick up a flag
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		if ( GetTeamNumber() == TF_TEAM_PVE_INVADERS && IsPlayerClass( TF_CLASS_ENGINEER ) )
 		{
@@ -2083,7 +2096,7 @@ CCaptureFlag *CTFBot::GetFlagToFetch( void ) const
 	CCaptureFlag *pClosestUncarriedFlag = NULL;
 	float flClosestUncarriedFlagDist = FLT_MAX;
 
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		int nMinFollower = INT_MAX;
 
@@ -3138,7 +3151,7 @@ float CTFBot::GetMaxAttackRange( void ) const
 	
 	if ( myWeapon->IsWeapon( TF_WEAPON_FLAMETHROWER ) )
 	{
-		if ( TFGameRules()->IsMannVsMachineMode() )
+		if (IsBotMannVsMachinePopulator())
 		{
 			const float flameRange = 350.0f;
 
@@ -3204,7 +3217,7 @@ float CTFBot::GetDesiredAttackRange( void ) const
 		return FLT_MAX;
 	}
 
-	if ( myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER ) && !TFGameRules()->IsMannVsMachineMode() )
+	if ( myWeapon->IsWeapon( TF_WEAPON_ROCKETLAUNCHER ) && !IsBotMannVsMachinePopulator())
 	{
 		return 1250.0f;
 	}
@@ -3286,7 +3299,7 @@ void CTFBot::EquipBestWeaponForThreat( const CKnownEntity *threat )
 	}
 
 	// no secondary weapons in MvM
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 	{
 		if ( IsPlayerClass( TF_CLASS_MEDIC ) && IsInASquad() && GetSquad() && !GetSquad()->IsLeader( this ) )
 		{
@@ -3433,7 +3446,7 @@ void CTFBot::EquipBestWeaponForThreat( const CKnownEntity *threat )
 bool CTFBot::EquipLongRangeWeapon( void )
 {
 	// no secondary weapons in MvM
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 		return false;
 
 	if ( IsPlayerClass( TF_CLASS_SOLDIER ) || 
@@ -4105,7 +4118,7 @@ bool CTFBot::ShouldFireCompressionBlast( void )
 		}
 	}
 
-	bool shouldPushPlayers = !TFGameRules()->IsMannVsMachineMode();
+	bool shouldPushPlayers = !IsBotMannVsMachinePopulator();
 
 	if ( shouldPushPlayers )
 	{
@@ -4524,7 +4537,13 @@ Action< CTFBot > *CTFBot::OpportunisticallyUseWeaponAbilities( void )
 	{
 		Vector forward;
 		EyeVectors( &forward );
-		bool bShouldCharge = GetLocomotionInterface()->IsPotentiallyTraversable( GetAbsOrigin(), GetAbsOrigin() + 100.0f * forward, ILocomotion::IMMEDIATELY );
+		trace_t trace;
+
+		// allow bot to see through projectile shield
+		CTraceFilterIgnoreFriendlyCombatItems filter(this, COLLISION_GROUP_NONE, GetTeamNumber());
+		UTIL_TraceLine(EyePosition(), EyePosition() + 700.0f * forward, MASK_SHOT, &filter, &trace);
+		const CKnownEntity* threat = GetVisionInterface()->GetPrimaryKnownThreat();
+		bool bShouldCharge = GetLocomotionInterface()->IsPotentiallyTraversable( GetAbsOrigin(), GetAbsOrigin() + 100.0f * forward, ILocomotion::IMMEDIATELY ) && threat && trace.m_pEnt == threat->GetEntity();
 		if ( HasAttribute( CTFBot::AIR_CHARGE_ONLY ) && ( GetGroundEntity() || GetAbsVelocity().z > 0 ) )
 		{
 			bShouldCharge = false;
@@ -4656,7 +4675,7 @@ void CTFBot::StartIdleSound( void )
 {
 	StopIdleSound();
 
-	if ( TFGameRules() && !TFGameRules()->IsMannVsMachineMode() )
+	if (IsBotMannVsMachinePopulator())
 		return;
 
 	// SHIELD YOUR EYES MIKEB!!!

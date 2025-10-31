@@ -138,7 +138,7 @@ ActionResult< CTFBot >	CTFBotSpyAttack::Update( CTFBot *me, float interval )
 	case CTFBot::EXPERT:	behindTolerance = 0.0f;		break;
 	}
 
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		behindTolerance = 0.7071f;
 	}
@@ -218,7 +218,7 @@ ActionResult< CTFBot >	CTFBotSpyAttack::Update( CTFBot *me, float interval )
 						isMovingTowardVictim = false;
 					}
 				}
-				else if ( TFGameRules()->IsMannVsMachineMode() )
+				else if (me->IsBotMannVsMachinePopulator())
 				{
 					if ( m_chuckleTimer.IsElapsed() )
 					{

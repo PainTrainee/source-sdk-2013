@@ -253,7 +253,7 @@ ActionResult< CTFBot >	CTFBotTacticalMonitor::Update( CTFBot *me, float interval
 	// check if we need to get to cover
 	QueryResultType shouldRetreat = me->GetIntentionInterface()->ShouldRetreat( me );
 
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		// never retreat in MvM mode
 		shouldRetreat = ANSWER_NO;
@@ -284,7 +284,7 @@ ActionResult< CTFBot >	CTFBotTacticalMonitor::Update( CTFBot *me, float interval
 
 	bool isAvailable = ( me->GetIntentionInterface()->ShouldHurry( me ) != ANSWER_YES );
 
-	if ( TFGameRules()->IsMannVsMachineMode() && me->HasTheFlag() )
+	if (me->IsBotMannVsMachinePopulator() && me->HasTheFlag() )
 	{
 		isAvailable = false;
 	}
@@ -316,12 +316,7 @@ ActionResult< CTFBot >	CTFBotTacticalMonitor::Update( CTFBot *me, float interval
 			return SuspendFor( new CTFBotGetAmmo, "Grabbing nearby ammo" );
 		}
 
-		bool shouldDestroySentries = true;
-
-		if ( TFGameRules()->IsMannVsMachineMode() )
-		{
-			shouldDestroySentries = false;
-		}
+		bool shouldDestroySentries = !me->IsBotMannVsMachinePopulator();
 
 		// destroy enemy sentry guns we've encountered
 		if ( shouldDestroySentries && me->GetEnemySentry() && CTFBotDestroyEnemySentry::IsPossible( me ) )

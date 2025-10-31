@@ -20,7 +20,10 @@ ConVar tf_bot_sniper_choose_target_interval( "tf_bot_sniper_choose_target_interv
 // Update internal state
 void CTFBotVision::Update( void )
 {
-	if ( TFGameRules()->IsMannVsMachineMode() )
+	CTFBot* me = (CTFBot*)GetBot()->GetEntity();
+	if (!me)
+		return;
+	if ( me->IsBotMannVsMachinePopulator() )
 	{
 		// Throttle vision update rate of robots in MvM for perf at the expense of reaction times
 		if ( !m_scanTimer.IsElapsed() )
@@ -32,10 +35,6 @@ void CTFBotVision::Update( void )
 	}
 
 	IVision::Update();
-
-	CTFBot *me = (CTFBot *)GetBot()->GetEntity();
-	if ( !me )
-		return;
 
 	// forget spies we have lost sight of
 	CUtlVector< CTFPlayer * > playerVector;
@@ -110,7 +109,8 @@ void CTFBotVision::UpdatePotentiallyVisibleNPCVector( void )
 		// collect list of active buildings
 		m_potentiallyVisibleNPCVector.RemoveAll();
 
-		bool bShouldSeeTeleporter = !TFGameRules()->IsMannVsMachineMode() || GetBot()->GetEntity()->GetTeamNumber() != TF_TEAM_PVE_INVADERS;
+		//bool bShouldSeeTeleporter = !TFGameRules()->IsMannVsMachineMode() || GetBot()->GetEntity()->GetTeamNumber() != TF_TEAM_PVE_INVADERS;
+		bool bShouldSeeTeleporter = true;
 		for ( int i=0; i<IBaseObjectAutoList::AutoList().Count(); ++i )
 		{
 			CBaseObject* pObj = static_cast< CBaseObject* >( IBaseObjectAutoList::AutoList()[i] );
@@ -315,7 +315,7 @@ bool CTFBotVision::IsIgnored( CBaseEntity *subject ) const
 			{
 				// unless we're in MvM where buildings can have really large health pools,
 				// so an engineer can die and run back in time to repair their stuff
-				if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+				if ( me->IsBotMannVsMachinePopulator() )
 				{
 					return false;
 				}
@@ -386,7 +386,7 @@ bool CTFBotVision::IsVisibleEntityNoticed( CBaseEntity *subject ) const
 			return false;
 		}
 
-		if ( TFGameRules()->IsMannVsMachineMode() )	// in MvM mode, forget spies as soon as they are fully disguised
+		if (me->IsBotMannVsMachinePopulator())	// in MvM mode, forget spies as soon as they are fully disguised
 		{
 			CTFBot::SuspectedSpyInfo_t* pSuspectInfo = me->IsSuspectedSpy( player );
 			// But only if we aren't suspecting them currently.  This happens when we bump into them.
@@ -406,7 +406,7 @@ bool CTFBotVision::IsVisibleEntityNoticed( CBaseEntity *subject ) const
 			return true;
 		}
 
-		if ( !TFGameRules()->IsMannVsMachineMode() )	// ignore in MvM mode
+		if ( !me->IsBotMannVsMachinePopulator())	// ignore in MvM mode
 		{
 			if ( player->IsPlacingSapper() )
 			{

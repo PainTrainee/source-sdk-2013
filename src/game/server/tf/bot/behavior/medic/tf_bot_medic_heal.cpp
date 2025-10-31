@@ -447,7 +447,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 	if ( me->IsInASquad() )
 	{
 		CTFBotSquad *squad = me->GetSquad();
-		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && squad->IsLeader( me ) )
+		if ( squad->IsLeader( me ) )
 		{
 			return ChangeTo( new CTFBotFetchFlag, "I'm now a squad leader! Going for the flag!" );
 		}
@@ -506,7 +506,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 	{
 		// no patients
 
-		if ( TFGameRules()->IsMannVsMachineMode() )
+		if (me->IsBotMannVsMachinePopulator())
 		{
 			// no-one is left to heal - get the flag!
 			return ChangeTo( new CTFBotFetchFlag, "Everyone is gone! Going for the flag" );
@@ -660,7 +660,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 				// uber if I'm getting low and have recently taken damage
 				if ( me->GetHealth() < me->GetUberHealthThreshold() )
 				{
-					if ( me->GetTimeSinceLastInjury( GetEnemyTeam( me->GetTeamNumber() ) ) < 1.0f || TFGameRules()->IsMannVsMachineMode() )
+					if ( me->GetTimeSinceLastInjury( GetEnemyTeam( me->GetTeamNumber() ) ) < 1.0f || me->IsBotMannVsMachinePopulator())
 					{
 						useUber = true;
 					}
@@ -673,7 +673,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 				}
 
 				// special case for bots in mvm spawn zones
-				if ( TFGameRules()->IsMannVsMachineMode() )
+				if (me->IsBotMannVsMachinePopulator())
 				{
 					if ( m_patient->m_Shared.InCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED ) && 
 						 me->m_Shared.InCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED ) )
@@ -701,7 +701,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 		}
 		
 		// try to activate shield when I'm not using uber so I don't waste it
-		if ( TFGameRules()->IsMannVsMachineMode() && me->HasAttribute( CTFBot::PROJECTILE_SHIELD ) )
+		if ( me->HasAttribute( CTFBot::PROJECTILE_SHIELD ) )
 		{
 			isUsingProjectileShield = me->m_Shared.IsRageDraining();
 			// when the rage is ready to deploy and we're not using uber
@@ -912,7 +912,7 @@ void CTFBotMedicHeal::ComputeFollowPosition( CTFBot *me )
 
 	bool isExposed;
 
-	if ( TFGameRules()->IsMannVsMachineMode() && me->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if (me->IsBotMannVsMachinePopulator())
 	{
 		// robot medics in MvM don't care if the enemy sees them
 		isExposed = false;
