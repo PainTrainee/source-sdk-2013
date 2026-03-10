@@ -680,6 +680,9 @@ public:
 
 	CNetworkVar( bool, m_bIsABot );
 	CNetworkVar( int, m_nBotSkill );
+	bool m_isMvMPopulator;
+	bool IsBotMannVsMachinePopulator() const;
+	void SetBotMannVsMachinePopulator(bool toggle);
 
 	int					StateGet( void ) const;
 

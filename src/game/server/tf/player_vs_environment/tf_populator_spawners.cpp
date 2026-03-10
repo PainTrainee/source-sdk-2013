@@ -1271,13 +1271,13 @@ bool CTFBotSpawner::Spawn( const Vector &rawHere, EntityHandleVector_t *result )
 				{
 					newBot->GetPlayerClass()->SetCustomModel( g_szBotBossModels[ nClassIndex ], USE_CLASS_ANIMATIONS );
 					newBot->UpdateModel();
-					newBot->SetBloodColor( DONT_BLEED );
+					newBot->SetBloodColor( BLOOD_COLOR_MECH );
 				}
 				else if ( g_pFullFileSystem->FileExists( g_szBotModels[ nClassIndex ] ) )
 				{
 					newBot->GetPlayerClass()->SetCustomModel( g_szBotModels[ nClassIndex ], USE_CLASS_ANIMATIONS );
 					newBot->UpdateModel();
-					newBot->SetBloodColor( DONT_BLEED );
+					newBot->SetBloodColor( BLOOD_COLOR_MECH );
 				}
 			}
 		}

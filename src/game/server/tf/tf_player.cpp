@@ -2808,6 +2808,7 @@ void CTFPlayer::PrecacheMvM()
 	PrecacheScriptSound( "MVM.Robot_Teleporter_Deliver" );
 	PrecacheScriptSound( "MVM.MoneyPickup" );
 
+	PrecacheMaterial( "effects/splash1" );
 	PrecacheMaterial( "effects/circle_nocull" );
 }
 
@@ -3571,6 +3572,7 @@ void CTFPlayer::Spawn()
 	{
 		m_nBotSkill = 0;
 	}
+	m_isMvMPopulator = false;
 
 	m_flSpawnTime = gpGlobals->curtime;
 
@@ -3940,6 +3942,16 @@ void CTFPlayer::Spawn()
 	}
 
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
+}
+//-----------------------------------------------------------------------------------------------------
+bool CTFPlayer::IsBotMannVsMachinePopulator() const
+{
+	return m_isMvMPopulator;
+}
+//-----------------------------------------------------------------------------------------------------
+void CTFPlayer::SetBotMannVsMachinePopulator(bool toggle)
+{
+	m_isMvMPopulator = toggle;
 }
 
 //-----------------------------------------------------------------------------
@@ -10842,12 +10854,12 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 				DispatchParticleEffect( "bot_impact_heavy", GetAbsOrigin(), vec3_angle );
 			}
 		}*/
-		if(BloodColor() != DONT_BLEED)
+		if(BloodColor() == BLOOD_COLOR_RED)
 		{
 			CPVSFilter filter( vDamagePos );
 			TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex() );
 		}
-		else
+		else if ( BloodColor() == BLOOD_COLOR_MECH )
 		{
 			if ( ( IsMiniBoss() && static_cast< float >( GetHealth() ) / GetMaxHealth() > 0.3f ) || realDamage < 50 )
 			{
@@ -12279,7 +12291,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 			}
 
 			// Electrical effect whenever a bot dies
-			if (BloodColor() != DONT_BLEED)
+			if (BloodColor() == BLOOD_COLOR_MECH)
 			{
 				CPVSFilter filter(WorldSpaceCenter());
 				TE_TFParticleEffect(filter, 0.f, "bot_death", GetAbsOrigin(), vec3_angle);

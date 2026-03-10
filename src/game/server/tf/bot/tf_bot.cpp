@@ -1294,8 +1294,6 @@ CTFBot::CTFBot()
 	m_maxVisionRangeOverride = -1.0f;
 	m_squadFormationError = 0.0f;
 
-	m_isMvMPopulator = false;
-
 	m_hFollowingFlagTarget = NULL;
 
 	SetShouldQuickBuild( false );
@@ -1381,16 +1379,7 @@ void CTFBot::SetMission( MissionType mission, bool resetBehaviorSystem )
 	}
 }
 
-//-----------------------------------------------------------------------------------------------------
-bool CTFBot::IsBotMannVsMachinePopulator() const
-{
-	return m_isMvMPopulator;
-}
-//-----------------------------------------------------------------------------------------------------
-void CTFBot::SetBotMannVsMachinePopulator(bool toggle)
-{
-	m_isMvMPopulator = toggle;
-}
+
 //-----------------------------------------------------------------------------------------------------
 bool CTFBot::ShouldReEvaluateCurrentClass( void ) const
 {

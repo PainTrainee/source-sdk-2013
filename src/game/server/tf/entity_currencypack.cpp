@@ -274,8 +274,8 @@ bool CCurrencyPack::MyTouch( CBasePlayer *pPlayer )
 		if ( !pTFTouchPlayer )
 			return false;
 
-		if ( pTFTouchPlayer->IsBot() )
-			return false;
+		/*if ( pTFTouchPlayer->IsBot() )
+			return false;*/
 
 		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 		{

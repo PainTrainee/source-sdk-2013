@@ -17,6 +17,7 @@
 #include "tf_weapon_rocketlauncher.h"
 #include "tf_weapon_sniperrifle.h"
 #include "tf_weapon_compound_bow.h"
+#include "tf_weapon_minigun.h"
 #include "tf_weaponbase_melee.h"
 #include "bot/tf_bot.h"
 #include "bot/tf_bot_manager.h"
@@ -661,7 +662,8 @@ Vector CTFBotMainAction::SelectTargetPoint( const INextBot *meBot, const CBaseCo
 					// aim at their feet
 
 					// lead our target
-					const float missileSpeed = ((CTFRocketLauncher*)myWeapon)->GetProjectileSpeed();
+					float missileSpeed = 1100.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(myWeapon, missileSpeed, mult_projectile_speed);
 					float rangeBetween = me->GetRangeTo( subject->GetAbsOrigin() );
 
 					const float veryCloseRange = 150.0f;
@@ -1257,25 +1259,22 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	if ( !myWeapon )
 		return;
 
-	if ( me->IsBarrageAndReloadWeapon( myWeapon ) )
+	if (me->HasAttribute(CTFBot::HOLD_FIRE_UNTIL_FULL_RELOAD) || tf_bot_always_full_reload.GetBool())
 	{
-		if ( me->HasAttribute( CTFBot::HOLD_FIRE_UNTIL_FULL_RELOAD ) || tf_bot_always_full_reload.GetBool() )
+		if (myWeapon->Clip1() <= 0)
 		{
-			if ( myWeapon->Clip1() <= 0 )
+			m_isWaitingForFullReload = true;
+		}
+
+		if (m_isWaitingForFullReload)
+		{
+			if (myWeapon->Clip1() < myWeapon->GetMaxClip1())
 			{
-				m_isWaitingForFullReload = true;
+				return;
 			}
 
-			if ( m_isWaitingForFullReload )
-			{
-				if ( myWeapon->Clip1() < myWeapon->GetMaxClip1() )
-				{
-					return;
-				}
-
-				// we are fully reloaded
-				m_isWaitingForFullReload = false;
-			}
+			// we are fully reloaded
+			m_isWaitingForFullReload = false;
 		}
 	}
 
@@ -1295,7 +1294,8 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 	}
 
 	// if we're a heavy and just saw a bad guy, keep the barrel spinning (unless we're in a hurry)
-	if ( me->IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) && !me->IsAmmoLow() && me->GetIntentionInterface()->ShouldHurry( me ) != ANSWER_YES )
+	// also have to check if heavy is using minigun
+	if ( me->IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) && dynamic_cast<CTFMinigun*>(myWeapon) && !me->IsAmmoLow() && me->GetIntentionInterface()->ShouldHurry( me ) != ANSWER_YES )
 	{
 		const float spinTime = 3.0f;
 		if ( me->GetVisionInterface()->GetTimeSinceVisible( GetEnemyTeam( me->GetTeamNumber() ) ) < spinTime )

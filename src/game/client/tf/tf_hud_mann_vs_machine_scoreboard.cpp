@@ -665,9 +665,75 @@ void CTFHudMannVsMachineScoreboard::UpdatePopFile( void )
 			}
 			else 
 			{
-				SetDialogVariable( "popfile", GetMapDisplayName(szTempName) );
-				// Hide Difficulty Panel since we dont know what it is
-				m_pDifficultyContainer->SetVisible( false );
+				//SetDialogVariable( "popfile", GetMapDisplayName(szTempName) );
+				//// Hide Difficulty Panel since we dont know what it is
+				//m_pDifficultyContainer->SetVisible( false );
+				const char* pszSrc = szTempName;
+				char wszChallengeName[256] = "when the imposter is sus";
+				char mapname[MAX_MAP_NAME];
+				EMvMChallengeDifficulty eDifficulty = k_EMvMChallengeDifficulty_Normal;
+				Q_FileBase(engine->GetLevelName(), mapname, sizeof(mapname));
+				if (!Q_strncmp(pszSrc, mapname, Q_strlen(mapname)))
+				{
+					pszSrc += Q_strlen(mapname) + 1;
+				}
+				if (!Q_strncmp(pszSrc, "adv_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Advanced;
+					pszSrc += 4;
+				}
+				else if (!Q_strncmp(pszSrc, "exp_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Expert;
+					pszSrc += 4;
+				}
+				else if (!Q_strncmp(pszSrc, "int_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Intermediate;
+					pszSrc += 4;
+				}
+				else if (!Q_strncmp(pszSrc, "nor_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Normal;
+					pszSrc += 4;
+				}
+				else if (!Q_strncmp(pszSrc, "norm_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Normal;
+					pszSrc += 5;
+				}
+				else if (Q_strstr(pszSrc, "advanced"))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Advanced;
+				}
+				else if (Q_strstr(pszSrc, "expert"))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Expert;
+				}
+				else if (Q_strstr(pszSrc, "intermediate"))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Intermediate;
+				}
+				if (!Q_strncmp(pszSrc, "666_", 4))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Haunted;
+					pszSrc += 4;
+				}
+				else if (Q_strstr(pszSrc, "666"))
+				{
+					eDifficulty = k_EMvMChallengeDifficulty_Haunted;
+				}
+				Q_strcpy(wszChallengeName, pszSrc);
+				for (char* pszUnderscore = wszChallengeName; pszUnderscore != NULL && *pszUnderscore != 0; pszUnderscore++)
+				{
+					// Replace it with a space
+					if (*pszUnderscore == '_')
+					{
+						*pszUnderscore = ' ';
+					}
+				}
+				SetDialogVariable("popfile", V_strtitlecase(wszChallengeName));
+				m_pDifficultyContainer->SetDialogVariable("difficultyvalue", g_pVGuiLocalize->Find(GetMvMChallengeDifficultyLocName(eDifficulty)));
 			}
 		}
 	}

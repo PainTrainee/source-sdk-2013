@@ -9071,64 +9071,65 @@ void CTFPlayerShared::RadiusCurrencyCollectionCheck( void )
 			continue;
 
 		// Currencypack's seek classes with a large collection radius
-		if ( bScout )
-		{
-			bool bFound = false;
-			FOR_EACH_VEC( m_CurrencyPacks, i )
-			{
-				pulledcurrencypacks_t packinfo = m_CurrencyPacks[i];
-				if ( packinfo.hPack == pCurrencyPack )
-					bFound = true;
-			}
+		//if ( bScout )
+		//{
+		//	bool bFound = false;
+		//	FOR_EACH_VEC( m_CurrencyPacks, i )
+		//	{
+		//		pulledcurrencypacks_t packinfo = m_CurrencyPacks[i];
+		//		if ( packinfo.hPack == pCurrencyPack )
+		//			bFound = true;
+		//	}
 
-			if ( !bFound )
-			{
-				// Mark as claimed to prevent other players from grabbing
-				pCurrencyPack->SetClaimed();
-				pulledcurrencypacks_t packinfo;
-				packinfo.hPack = pCurrencyPack;
-				packinfo.flTime = gpGlobals->curtime + 1.f;
-				m_CurrencyPacks.AddToTail( packinfo );
-			}
-		}
-		else
-		{
+		//	if ( !bFound )
+		//	{
+		//		// Mark as claimed to prevent other players from grabbing
+		//		pCurrencyPack->SetClaimed();
+		//		pulledcurrencypacks_t packinfo;
+		//		packinfo.hPack = pCurrencyPack;
+		//		packinfo.flTime = gpGlobals->curtime + 1.f;
+		//		m_CurrencyPacks.AddToTail( packinfo );
+		//	}
+		//}
+		//else
+		//{
+		//	pCurrencyPack->Touch( m_pOuter );
+		//}
 			pCurrencyPack->Touch( m_pOuter );
-		}
 	}
 
-	FOR_EACH_VEC_BACK( m_CurrencyPacks, i )
-	{
-		if ( m_CurrencyPacks[i].hPack )
-		{
-			// If the timeout hits, force a touch
-			if ( m_CurrencyPacks[i].flTime <= gpGlobals->curtime )
-			{
-				m_CurrencyPacks[i].hPack->Touch( m_pOuter );
-			}
-			else
-			{
-				// Seek the player
-				const float flForce = 550.0f;
+	//FOR_EACH_VEC_BACK( m_CurrencyPacks, i )
+	//{
+	//	if ( m_CurrencyPacks[i].hPack )
+	//	{
+	//		// If the timeout hits, force a touch
+	//		if ( m_CurrencyPacks[i].flTime <= gpGlobals->curtime )
+	//		{
+	//			m_CurrencyPacks[i].hPack->Touch( m_pOuter );
+	//		}
+	//		else
+	//		{
+	//			// Seek the player
+	//			const float flForce = 550.0f;
 
-				Vector vToPlayer = m_pOuter->GetAbsOrigin() - m_CurrencyPacks[i].hPack->GetAbsOrigin();
+	//			Vector vToPlayer = m_pOuter->GetAbsOrigin() - m_CurrencyPacks[i].hPack->GetAbsOrigin();
 
-				vToPlayer.z = 0.0f;
-				vToPlayer.NormalizeInPlace();
-				vToPlayer.z = 0.25f;
+	//			vToPlayer.z = 0.0f;
+	//			vToPlayer.NormalizeInPlace();
+	//			vToPlayer.z = 0.25f;
 
-				Vector vPush = flForce * vToPlayer;
+	//			Vector vPush = flForce * vToPlayer;
 
-				m_CurrencyPacks[i].hPack->RemoveFlag( FL_ONGROUND );
-				m_CurrencyPacks[i].hPack->ApplyAbsVelocityImpulse( vPush );
-			}
-		}
-		else
-		{
-			// Automatic clean-up
-			m_CurrencyPacks.Remove( i );
-		}
-	}
+	//			m_CurrencyPacks[i].hPack->RemoveFlag( FL_ONGROUND );
+	//			m_CurrencyPacks[i].hPack->ApplyAbsVelocityImpulse( vPush );
+	//		}
+	//	}
+	//	else
+	//	{
+	//		// Automatic clean-up
+	//		m_CurrencyPacks.Remove( i );
+	//	}
+	//}
 
 	m_flRadiusCurrencyCollectionTime = bScout ? gpGlobals->curtime + 0.15f : gpGlobals->curtime + 0.25f;
 }

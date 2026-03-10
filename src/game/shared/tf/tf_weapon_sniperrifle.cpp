@@ -27,6 +27,7 @@
 // forward declarations
 void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 #else
+#include "tf/bot/tf_bot.h"
 #include "tf_gamerules.h"
 #include "tf_fx.h"
 #endif
@@ -1666,7 +1667,8 @@ void CSniperDot::ClientThink( void )
 	if ( TFGameRules()->IsPVEModeActive() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
 	{
 		C_TFPlayer *pPlayer = ToTFPlayer( GetOwnerEntity() );
-		if ( pPlayer )
+
+		if (pPlayer)
 		{
 			if ( !m_laserBeamEffect )
 			{

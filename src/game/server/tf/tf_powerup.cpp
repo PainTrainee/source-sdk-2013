@@ -168,7 +168,7 @@ bool CTFPowerup::ValidTouch( CBasePlayer *pPlayer )
 	}
 
 	// enemies in mann vs machine can't pick up any powerups
-	if ( TFGameRules()->IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if ( dynamic_cast<CTFBot*>(pPlayer) && dynamic_cast<CTFBot*>(pPlayer)->IsBotMannVsMachinePopulator())
 	{
 		return false;
 	}

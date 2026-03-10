@@ -112,7 +112,7 @@ ActionResult< CTFBot >	CTFBotSpySap::Update( CTFBot *me, float interval )
 			m_repathTimer.Start( RandomFloat( 1.0f, 2.0f ) );
 
 			CTFBotPathCost cost( me, FASTEST_ROUTE );
-			if ( m_path.Compute( me, m_sapTarget, cost ) == false )
+			if ( m_path.Compute( me, m_sapTarget->GetAbsOrigin(), cost) == false)
 			{
 				return Done( "No path to sap target!" );
 			}

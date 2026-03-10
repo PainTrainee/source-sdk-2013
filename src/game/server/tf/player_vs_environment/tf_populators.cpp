@@ -630,7 +630,7 @@ bool CMissionPopulator::UpdateMissionDestroySentries( void )
 
 						bot->GetPlayerClass()->SetCustomModel( g_szBotBossSentryBusterModel, USE_CLASS_ANIMATIONS );
 						bot->UpdateModel();
-						bot->SetBloodColor( DONT_BLEED );
+						bot->SetBloodColor( BLOOD_COLOR_MECH );
 
 						if ( TFObjectiveResource() )
 						{

@@ -629,6 +629,9 @@ CTFBot* CTFBotManager::GetAvailableBotFromPool()
 		if (pBot == NULL)
 			continue;
 
+		if (pBot->IsBotMannVsMachinePopulator())
+			continue;
+
 		if ( ( pBot->GetFlags() & FL_FAKECLIENT ) == 0 )
 			continue;
 
